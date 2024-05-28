@@ -1,0 +1,80 @@
+service: RDSConnection
+
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  stage: ${opt:stage, 'dev'}
+  vpc:
+    securityGroupIds:
+      - sg-0b81d2df9a3334b49
+    subnetIds:
+      - subnet-0e97218a7a2b4fb00
+      - subnet-071be1aaf15d9c7e3
+      - subnet-027a2e3e6f6d6c5c8
+      - subnet-087be45847d8f37c4
+      - subnet-0612d2c754ff49d8a
+      - subnet-092e82075e26d27a2
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - ses:SendEmail
+        - ses:SendRawEmail
+        - ses:SendTemplatedEmail
+        - ses:CreateTemplate
+        - ses:DeleteTemplate
+      Resource: "*"
+
+plugins:
+  - serverless-offline
+  - serverless-prune-plugin
+  - serverless-plugin-include-dependencies
+
+package: 
+  exclude:
+    - node_modules/**
+
+custom:
+  prune:
+    automatic: true
+    number: 1
+
+functions:
+  RDSTestConnection:
+    handler: handlers/handlerRDSTestConnection.RDSTestConnection
+    events:
+      - httpApi:
+          path: /RDSConnection/RDSTestConnection
+          method: get
+  RDSCreateUser:
+    handler: handlers/handlerRDSCreateUser.RDSCreateUser
+    events:
+      - httpApi:
+          path: /users
+          method: post
+  RDSUpdateUser:
+    handler: handlers/handlerRDSUpdateUser.RDSUpdateUser
+    events:
+      - httpApi:
+          path: /users/{id}
+          method: put
+  RDSDeleteUser:
+    handler: handlers/handlerDeleteUser.RDSDeleteUser
+    events:
+      - httpApi:
+          path: /users/{id}
+          method: delete
+  RDSListUsers:
+    handler: handlers/handlerListUser.RDSListUsers
+    events:
+      - httpApi:
+          path: /users
+          method: get
+  RDSGetUser:
+    handler: handlers/handlerGetUser.RDSGetUser
+    events:
+      - httpApi:
+          path: /users/{id}
+          method: get
